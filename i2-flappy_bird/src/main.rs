@@ -1,11 +1,18 @@
 extern crate olc_pixel_game_engine;
 use crate::olc_pixel_game_engine as olc;
 use std::collections::VecDeque;
+use rand::prelude::*;
 
 struct FlappyBird {
-    list_section: VecDeque<i32>,
-    b_reset_game: bool,
     f_section_width: f64,
+    list_section: VecDeque<u32>,
+    f_level_position: f64,
+
+    b_reset_game: bool,
+    f_bird_position: f64,
+    f_bird_velocity: f64,
+    f_bird_acceleration: f64,
+    f_gravity: f64,
 }
 
 impl FlappyBird {
@@ -13,7 +20,12 @@ impl FlappyBird {
         FlappyBird {
             list_section: VecDeque::new(),
             b_reset_game: false,
-            f_section_width: 0.0,
+            f_section_width: 0.0f64,
+            f_bird_position: 0.0f64,
+            f_bird_velocity: 0.0f64,
+            f_bird_acceleration: 0.0f64,
+            f_gravity: 100.0f64,
+            f_level_position: 0.064,
         }
     }
 }
@@ -21,7 +33,7 @@ impl FlappyBird {
 impl olc::Application for FlappyBird {
     fn on_user_create(&mut self) -> Result<(), olc::Error> {
         self.list_section.clear();
-        self.list_section.push_back(0);
+        self.list_section.push_back(0u32);
         self.list_section.push_back(0);
         self.list_section.push_back(0);
         self.list_section.push_back(0);
@@ -32,7 +44,46 @@ impl olc::Application for FlappyBird {
         Ok(())
     }
 
-    fn on_user_update(&mut self, _elapsed_time: f32) -> Result<(), olc::Error> {
+    fn on_user_update(&mut self, f_elapsed_time: f32) -> Result<(), olc::Error> {
+        let spaceButtonState = olc::get_key(olc::Key::SPACE);
+        if spaceButtonState.pressed && self.f_bird_velocity >= self.f_gravity / 10.0f64 {
+            self.f_bird_acceleration = 0.0f64;
+            self.f_bird_velocity = -self.f_gravity / 4.0f64;
+        } else {
+            self.f_bird_acceleration += self.f_gravity * (f_elapsed_time as f64);
+        }
+
+        if self.f_bird_acceleration >= self.f_gravity {
+            self.f_bird_acceleration >= self.f_gravity;
+        }
+
+        self.f_bird_velocity += self.f_bird_acceleration * (f_elapsed_time as f64);
+        self.f_bird_position += self.f_bird_velocity * (f_elapsed_time as f64);
+
+        self.f_level_position += 14.0f64 * (f_elapsed_time as f64);
+        if self.f_level_position > self.f_section_width {
+            self.f_level_position -= self.f_section_width;
+            self.list_section.pop_front();
+
+            let mut i: u32 = rand::random::<u32>() % (olc::screen_height() as u32 - 20u32);
+            if i <= 10 {
+                i = 0;
+            }
+            self.list_section.push_back(i);
+        }
+
+
+        olc::clear(olc::BLACK);
+        let n_bird_x = ((olc::screen_width() as f64 )/ 3.0f64) as i32;
+
+        if self.f_bird_velocity > 0.0f64 {
+            olc::draw_string(n_bird_x, self.f_bird_position as i32 + 0, "\\\\\\", olc::WHITE);
+            olc::draw_string(n_bird_x, self.f_bird_position as i32 + 8, "<\\\\\\=Q", olc::WHITE);
+        } else {
+            olc::draw_string(n_bird_x, self.f_bird_position as i32 + 0, "<///=>Q", olc::WHITE);
+            olc::draw_string(n_bird_x, self.f_bird_position as i32 + 8, "///", olc::WHITE);
+        }
+
         Ok(())
     }
 
@@ -44,5 +95,5 @@ impl olc::Application for FlappyBird {
 fn main() {
     let mut game = FlappyBird::new();
 
-    olc::start("Flabby Bird", &mut game, 80, 48, 16, 16);
+    olc::start("Flabby Bird", &mut game, 500, 400, 2, 2);
 }
