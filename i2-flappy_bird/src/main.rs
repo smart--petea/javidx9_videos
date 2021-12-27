@@ -1,7 +1,6 @@
 extern crate olc_pixel_game_engine;
 use crate::olc_pixel_game_engine as olc;
 use std::collections::VecDeque;
-use rand::prelude::*;
 
 struct FlappyBird {
     f_section_width: f64,
@@ -60,12 +59,13 @@ impl olc::Application for FlappyBird {
         self.f_bird_velocity += self.f_bird_acceleration * (f_elapsed_time as f64);
         self.f_bird_position += self.f_bird_velocity * (f_elapsed_time as f64);
 
+        let available_height = olc::screen_height() as i32 - 80i32;
         self.f_level_position += 14.0f64 * (f_elapsed_time as f64);
         if self.f_level_position > self.f_section_width {
             self.f_level_position -= self.f_section_width;
             self.list_section.pop_front();
 
-            let mut i: u32 = rand::random::<u32>() % (olc::screen_height() as u32 - 20u32);
+            let mut i: u32 = rand::random::<u32>() % (available_height as u32);
             if i <= 10 {
                 i = 0;
             }
@@ -73,7 +73,24 @@ impl olc::Application for FlappyBird {
         }
 
 
+        println!("section_width: {}, full_width={}", self.f_section_width, olc::screen_width());
         olc::clear(olc::BLACK);
+        let width = (0.5f64 * self.f_section_width) as i32;
+        let mut n_section = 0.0f64;
+        for s in self.list_section.iter() {
+            let s = *s;
+            println!("s={}", s);
+            if s != 0 {
+                let x = (n_section * self.f_section_width - self.f_level_position as f64) as i32;
+                olc::fill_rect(x, olc::screen_height() - (s as i32), width, s as i32, olc::GREEN);
+                olc::fill_rect(x, 0i32, width, available_height - s as i32, olc::GREEN);
+            }
+
+            n_section = n_section + 1.0;
+        }
+
+
+
         let n_bird_x = ((olc::screen_width() as f64 )/ 3.0f64) as i32;
 
         if self.f_bird_velocity > 0.0f64 {
