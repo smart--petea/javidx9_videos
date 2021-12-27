@@ -36,6 +36,7 @@ impl olc::Application for FlappyBird {
         self.list_section.push_back(0);
         self.list_section.push_back(0);
         self.list_section.push_back(0);
+        self.list_section.push_back(0);
 
         self.b_reset_game = true;
         self.f_section_width = olc::screen_width() as f64 / (self.list_section.len() - 1) as f64;
@@ -46,7 +47,7 @@ impl olc::Application for FlappyBird {
     fn on_user_update(&mut self, f_elapsed_time: f32) -> Result<(), olc::Error> {
         let spaceButtonState = olc::get_key(olc::Key::SPACE);
         if spaceButtonState.pressed && self.f_bird_velocity >= self.f_gravity / 10.0f64 {
-            self.f_bird_acceleration = 0.0f64;
+            self.f_bird_acceleration = 0.6f64;
             self.f_bird_velocity = -self.f_gravity / 4.0f64;
         } else {
             self.f_bird_acceleration += self.f_gravity * (f_elapsed_time as f64);
@@ -59,7 +60,7 @@ impl olc::Application for FlappyBird {
         self.f_bird_velocity += self.f_bird_acceleration * (f_elapsed_time as f64);
         self.f_bird_position += self.f_bird_velocity * (f_elapsed_time as f64);
 
-        let available_height = olc::screen_height() as i32 - 80i32;
+        let available_height = olc::screen_height() as i32 - 100i32;
         self.f_level_position += 14.0f64 * (f_elapsed_time as f64);
         if self.f_level_position > self.f_section_width {
             self.f_level_position -= self.f_section_width;
@@ -75,7 +76,7 @@ impl olc::Application for FlappyBird {
 
         println!("section_width: {}, full_width={}", self.f_section_width, olc::screen_width());
         olc::clear(olc::BLACK);
-        let width = (0.5f64 * self.f_section_width) as i32;
+        let width = (0.3f64 * self.f_section_width) as i32;
         let mut n_section = 0.0f64;
         for s in self.list_section.iter() {
             let s = *s;
@@ -112,5 +113,5 @@ impl olc::Application for FlappyBird {
 fn main() {
     let mut game = FlappyBird::new();
 
-    olc::start("Flabby Bird", &mut game, 500, 400, 2, 2);
+    olc::start("Flabby Bird", &mut game, 500, 250, 2, 2);
 }
